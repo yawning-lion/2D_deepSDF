@@ -20,12 +20,12 @@ from .argument import args
 from .nn_train import loss, batch_forward
 
 
-config = {'data_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/data_set/supervised_data.npy',
+config = {'data_path':'/gpfs/share/home/1900011026/2D_deepSDF//data/data_set/supervised_data.npy',
         'mode':'infer',
-        'train_loss_record_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/train_loss_record.npy',
-        'test_loss_record_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/test_loss_record.npy',
+        'train_loss_record_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/model/train_loss_record.npy',
+        'test_loss_record_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/model/test_loss_record.npy',
         'if_test':False,
-        'boundary_point_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/data_set/infer_boundary_point.npy'}
+        'boundary_point_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/infer_boundary_point.npy'}
 
 
 def append_latent(latent_code,point):
@@ -55,6 +55,7 @@ def plot_SDF(nn, latent_code):
 	x_b = boundary_point[:, 0]
 	y_b = boundary_point[:, 1]
 	plt.scatter(x_b, y_b, s = 1, c = 'r', marker = 'o')
+	plt.savefig('/gpfs/share/home/1900011026/2D_deepSDF/data/img/{}_shape{}'.format(config['mode'], args.shape_index), facecolor='grey', edgecolor='red')
 	plt.show()
 
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 		onp.save(config['test_loss_record_path'], test_loss_record)
 	plot_learning_curve(config['test_loss_record_path'], 'test')
 	'''
-	file_read = open("data/model/{}ed_params.txt".format(config['mode']), "rb")
+	file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(config['mode']), "rb")
 	params = pickle.load(file_read)
 	nn = params[1]
 	latent_code = params[0]

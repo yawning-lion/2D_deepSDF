@@ -19,9 +19,9 @@ from .argument import args
 
 
 
-config = {'data_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/data_set/supervised_data.npy',
+config = {'data_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/supervised_data.npy',
         'mode':'train',
-        'loss_record_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/train_loss_record.npy'}
+        'loss_record_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/model/train_loss_record.npy'}
 
 
 def get_mlp(args):
@@ -110,7 +110,7 @@ def run_training_loop():
             print("Epoch {} | T: {:0.2f} | Train_loss: {:0.6f} ".format(epoch+1, epoch_time, train_loss))
             start_time = time.time()
     onp.save(config['loss_record_path'], train_loss_record)
-    file_w = open("/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/trained_params.txt", "wb")
+    file_w = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/trained_params.txt", "wb")
     pickle.dump(params, file_w)
 
 
@@ -122,4 +122,4 @@ opt_init, opt_update, get_params = optimizers.adam(args.learning_rate)
 
 if __name__ == '__main__':
     run_training_loop()
-
+    plot_learning_curve(config['loss_record_path'], config['mode'])

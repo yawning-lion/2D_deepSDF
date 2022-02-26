@@ -20,9 +20,9 @@ from .argument import args
 from .nn_train import loss, batch_forward, forward
 
 
-config = {'data_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/data_set/infer_data.npy',
+config = {'data_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/infer_data.npy',
         'mode':'infer',
-        'loss_record_path':'/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/infer_loss_record.npy'}
+        'loss_record_path':'/gpfs/share/home/1900011026/2D_deepSDF/data/model/infer_loss_record.npy'}
 
 
 def infer_loss(infer_latent, nn, in_array, sdf):
@@ -62,7 +62,7 @@ def run_infer_loop(nn):
             start_time = time.time()
     onp.save(config['loss_record_path'], infer_loss_record)
     infered_params = [infer_latent, nn]
-    file_w = open("/home/yawnlion/Desktop/PYproject/2D_deepSDF/data/model/infered_params.txt", "wb")
+    file_w = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/infered_params.txt", "wb")
     pickle.dump(infered_params, file_w)
 
 
@@ -71,7 +71,7 @@ def run_infer_loop(nn):
 opt_init, opt_update, get_params = optimizers.adam(args.learning_rate)
 
 if __name__ == '__main__':
-	file_read = open("data/model/trained_params.txt", "rb")
+	file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/trained_params.txt", "rb")
 	params = pickle.load(file_read)
 	nn = params[1]
 	run_infer_loop(nn)

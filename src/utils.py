@@ -75,7 +75,7 @@ def plot_learning_curve(loss_record_path, mode):
     plt.ylabel('logged MSE loss')
     plt.title('Learning curve of {}'.format(mode))
     plt.legend()
-    plt.savefig('Learning curve of {}'.format(mode), facecolor='grey', edgecolor='red')
+    plt.savefig('/gpfs/share/home/1900011026/2D_deepSDF/data/img/Learning curve of {}'.format(mode), facecolor='grey', edgecolor='red')
     plt.show()
 
 

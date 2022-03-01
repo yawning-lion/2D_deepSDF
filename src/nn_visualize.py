@@ -38,9 +38,10 @@ batch_append_latent=vmap(append_latent,in_axes=(None,0))
 
 matrix_append_latent=vmap(batch_append_latent,in_axes=(None,0))
 
-def plot_SDF(nn, latent_code):
+
+def plot_SDF(nn, latent_code, boundary_point, shape):
 	step=0.01
-	shape=args.shape_index
+	boundary = boundary_point[shape]
 	x = onp.arange(-3,3,step)
 	y = onp.arange(-3,3,step)
 	X,Y = onp.meshgrid(x,y)
@@ -51,17 +52,16 @@ def plot_SDF(nn, latent_code):
 	OUT = OUT.reshape(X.shape)
 	plt.figure(figsize=(5,5))
 	contour = plt.contour(X,Y,OUT,[-0.5,0,0.5],colors='k')
-	boundary_point = onp.load(config['boundary_point_path'])[shape]
-	x_b = boundary_point[:, 0]
-	y_b = boundary_point[:, 1]
+	x_b = boundary[:, 0]
+	y_b = boundary[:, 1]
 	plt.scatter(x_b, y_b, s = 1, c = 'r', marker = 'o')
-	plt.savefig('/gpfs/share/home/1900011026/2D_deepSDF/data/img/{}_shape{}'.format(config['mode'], args.shape_index), facecolor='grey', edgecolor='red')
-	plt.show()
+	plt.savefig('/gpfs/share/home/1900011026/2D_deepSDF/data/img/{}_shape{}'.format(config['mode'], shape))
+	plt.close()
 
-
+batch_plot_SDF = vmap(plot_SDF, in_axes = (None, None, 0), out_axes = 0)
 
 if __name__ == '__main__':
-	'''
+    '''
 	plot_learning_curve(config['train_loss_record_path'], config['mode'])
 	if(config['if_test']):
 		test_loader = SDF_dataloader(config['data_path'], 'test', args)
@@ -74,9 +74,12 @@ if __name__ == '__main__':
 
 		onp.save(config['test_loss_record_path'], test_loss_record)
 	plot_learning_curve(config['test_loss_record_path'], 'test')
-	'''
-	file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(config['mode']), "rb")
-	params = pickle.load(file_read)
-	nn = params[1]
-	latent_code = params[0]
-	plot_SDF(nn, latent_code)
+    '''
+    
+    file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(config['mode']), "rb")
+    params = pickle.load(file_read)
+    nn = params[1]
+    latent_code = params[0]
+    boundary_point = onp.load(config['boundary_point_path'])
+    for i in range(args.num_shape_infer):
+        plot_SDF(nn, latent_code, boundary_point, i)

@@ -8,6 +8,7 @@ from jax import vmap
 import argparse
 from .argument import args
 
+
 def d_to_line_seg(P, A, B):
     '''Distance of a point P to a line segment AB'''
     AB = B - A
@@ -98,7 +99,7 @@ def generate_radius_samples(num_shape, num_division=64):
         '''Periodic kernel
         '''
         sigma = 0.2
-        l = 0.4
+        l = 0.6
         p = 2 * onp.pi
         k = sigma**2 * onp.exp(-2 * onp.sin(onp.pi * onp.absolute(x1 - x2) / p)**2 / l**2)
         return k

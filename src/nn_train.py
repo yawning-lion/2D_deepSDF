@@ -65,17 +65,29 @@ def append_latent(latent_code, point):
 
 batch_append_latent=vmap(append_latent,in_axes=(None,0))
 
+def single_forward(params, point):
+    in_array = append_latent(params[0], point)
+    return batch_forward(params[1], in_array)[0]
+
+def eikonal_loss(point, params):
+    grad_value = grad(single_forward, argnums = 1)(params, point)
+    grad_v = grad_value[:-1]
+    print(grad_v)
+    return (np.linalg.norm(grad_v) - 1.)**2
+
+batch_eikonal_loss = vmap(eikonal_loss, in_axes = (0, None), out_axes = 0)
 
 def forward(params, in_array):
     in_array = batch_append_latent(params[0], in_array)
     out_put = batch_forward(params[1], in_array)
     return out_put.reshape(-1)
 
+
 def loss(params, in_array, sdf):
     out_put = forward(params,in_array)
     sdf_loss = np.sum((out_put - sdf) ** 2)
     latent_loss = np.linalg.norm(params[0])
-    return sdf_loss + latent_loss / args.convariance
+    return latent_loss / args.convariance + sdf_loss 
 
 
 @jit
@@ -102,9 +114,8 @@ def run_training_loop():
             point = np.array(data)    
             sdf = np.array(target)
             params, opt_state, train_loss = update(params, point, sdf, opt_state)
-
+            
         train_loss_record.append(math.log(train_loss))
-
         if((epoch+1)%32 == 0):
             epoch_time = time.time() - start_time
             print("Epoch {} | T: {:0.2f} | Train_loss: {:0.6f} ".format(epoch+1, epoch_time, train_loss))

@@ -79,8 +79,9 @@ def triangleSDF(x, y):
     triangle_corners_rolled = np.roll(triangle_corners, 1, axis=0)
     pointO = np.array([0., 0.])
     sign = np.where(np.any(sign_to_line_segs(point, pointO, triangle_corners, triangle_corners_rolled)), -1., 1.)
-    sdf = np.min(d_to_line_segs(point,triangle_corners, triangle_corners_rolled)) * sign
-    return sdf
+    sdf = np.min(d_to_line_segs(point,triangle_corners, triangle_corners_rolled))
+    sdf = sdf * 0.6 + 0.2
+    return sign * sdf
 
 def get_angles(num_division):
     return onp.linspace(0, 2 * onp.pi, num_division + 1)[:-1]
@@ -148,8 +149,8 @@ def shapeSDF(x, y, boundary_points):
     boundary_points_rolled = np.roll(boundary_points, 1, axis=0)
     pointO = np.array([0., 0.])
     sign = np.where(np.any(sign_to_line_segs(point, pointO, boundary_points, boundary_points_rolled)), -1., 1.)
-    sdf = np.min(d_to_line_segs(point,boundary_points, boundary_points_rolled)) * sign
-    return sdf
+    sdf = np.min(d_to_line_segs(point,boundary_points, boundary_points_rolled))
+    return sdf * sign
 
 def supervised_point_generator(num_shape, num_point, num_division):
     '''
@@ -177,8 +178,20 @@ def supervised_point_generator(num_shape, num_point, num_division):
 
     return supervised_data
 
+def disturb_boundary(data_point, num_disturb = 10):
+    tmp = onp.random.uniform(0.3, 1.3, size = (num_disturb, 1))
+    point = data_point[:-2]
+    shape = data_point[-2]
+    batch_point = np.repeat(point, num_disturb, axis = 0).reshape(num_disturb, len(point))
+    batch_shape = np.repeat(shape, num_disturb, axis = 0).reshape(num_disturb, 1)
+    disturb_point = np.multiply(batch_point, tmp)
+    sdf = tmp - 1
+    disturbed_data_point = np.concatenate([batch_point, batch_shape, sdf], 1)
+    return disturbed_data_point
 
-def infer_data_generator(num_shape, num_division):
+vmap_disturb_boundary = vmap(disturb_boundary, in_axes = (0, None), out_axes = 0)
+
+def infer_data_generator(num_shape, num_division, num_disturb = 5):
 	radius_samples = generate_radius_samples(num_shape, num_division)
 	batch_boundary_points = compute_boundary_points(radius_samples)
 	#print(batch_boundary_points)
@@ -188,15 +201,24 @@ def infer_data_generator(num_shape, num_division):
 	size_len = shape[0] * shape[1]
 	batch_boundary_points = batch_boundary_points.reshape(size_len, shape[2])
 	#print(batch_boundary_points)
+	
 	shape_index = np.arange(num_shape)
 	shape_index = np.repeat(shape_index, num_division)
 	shape_index = shape_index.reshape(shape_index.size, 1)
 	sdf = np.zeros(size_len).reshape(size_len,1)
-	infer_data = np.concatenate([batch_boundary_points, shape_index, sdf], 1)
+	infer_boundary = np.concatenate([batch_boundary_points, shape_index, sdf], 1)
+	disturbed_data = vmap_disturb_boundary(infer_boundary, 10)
+	shape_data = disturbed_data.shape
+	disturbed_data = disturbed_data.reshape(shape_data[0]*shape_data[1], shape_data[2])
+	infer_data = np.concatenate([disturbed_data, infer_boundary], 0)
+	print(infer_data.shape)
+	print(infer_data[0])
 	onp.save('/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/infer_data.npy', 
-			infer_data)
+			infer_boundary)
+	
 
 if __name__ == "__main__":
     supervised_data = supervised_point_generator(args.num_shape_train, args.num_point, args.num_division)
     onp.save('/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/supervised_data.npy', supervised_data)
     infer_data_generator(args.num_shape_infer, args.num_division)
+    print('date prepared')

@@ -60,6 +60,17 @@ def plot_SDF(nn, latent_code, boundary_point, shape, mode):
 
 batch_plot_SDF = vmap(plot_SDF, in_axes = (None, None, 0), out_axes = 0)
 
+
+def run_plot_loop(mode, index):
+    file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(mode), "rb")
+    params = pickle.load(file_read)
+    nn = params[1]
+    latent_code = params[0]
+    boundary_point = onp.load('/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/{}_boundary_point.npy'.format(mode))
+    for i in range(index):
+        plot_SDF(nn, latent_code, boundary_point, i, mode)
+
+
 if __name__ == '__main__':
     '''
 	plot_learning_curve(config['train_loss_record_path'], config['mode'])
@@ -75,22 +86,6 @@ if __name__ == '__main__':
 		onp.save(config['test_loss_record_path'], test_loss_record)
 	plot_learning_curve(config['test_loss_record_path'], 'test')
     '''
-    mode = 'train'
-    file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(mode), "rb")
-    params = pickle.load(file_read)
-    nn = params[1]
-    latent_code = params[0]
-    boundary_point = onp.load('/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/{}_boundary_point.npy'.format(mode))
-    for i in range(args.num_shape_train):
-        plot_SDF(nn, latent_code, boundary_point, i, mode)
-    
-    mode = 'infer'
-    file_read = open("/gpfs/share/home/1900011026/2D_deepSDF/data/model/{}ed_params.txt".format(mode), "rb")
-    params = pickle.load(file_read)
-    nn = params[1]
-    latent_code = params[0]
-    boundary_point = onp.load('/gpfs/share/home/1900011026/2D_deepSDF/data/data_set/{}_boundary_point.npy'.format(mode))
-    for i in range(args.num_shape_infer):
-        plot_SDF(nn, latent_code, boundary_point, i, mode)   
-        
+    run_plot_loop('train', args.num_shape_train)  
+    run_plot_loop('infer', args.num_shape_infer)    
         
